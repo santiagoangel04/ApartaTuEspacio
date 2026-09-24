@@ -68,6 +68,19 @@ app.set('trust proxy', 1) // Railway está detrás de un proxy; así req.ip es l
 app.use(cors({ origin: ALLOWED_ORIGINS, methods: ['POST', 'GET', 'OPTIONS'] }))
 app.use(express.json({ limit: '10kb' }))
 
+// La API no tiene páginas: estas rutas solo explican qué hay aquí si alguien la abre en el navegador.
+app.get('/', (_req, res) => {
+  res.json({
+    ok: true,
+    service: 'API de registros de ApartaTuEspacio',
+    endpoints: { health: 'GET /health', leads: 'POST /api/leads' },
+  })
+})
+
+app.get('/api/leads', (_req, res) => {
+  res.status(405).json({ ok: false, error: 'Usa POST para enviar un registro' })
+})
+
 app.get('/health', async (_req, res) => {
   try {
     await pool.query('SELECT 1')
