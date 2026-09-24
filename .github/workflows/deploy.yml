@@ -4,6 +4,8 @@ name: Deploy a GitHub Pages
 on:
   push:
     branches: [main]
+    paths-ignore:
+      - 'server/**' # la API se despliega en Railway, no afecta la landing
   workflow_dispatch:
 
 permissions:

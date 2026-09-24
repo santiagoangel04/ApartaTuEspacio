@@ -1,0 +1,20 @@
+{
+  "name": "apartatuespacio-api",
+  "private": true,
+  "version": "0.1.0",
+  "description": "API que recibe los registros de la landing de ApartaTuEspacio y los guarda en MySQL.",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "node --watch index.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "mysql2": "^3.11.5"
+  }
+}

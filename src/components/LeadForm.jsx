@@ -76,7 +76,11 @@ export default function LeadForm() {
       setStatus('success')
     } catch (err) {
       console.error(err)
-      setSubmitError('No pudimos enviar tu registro. Revisa tu conexión e inténtalo de nuevo.')
+      setSubmitError(
+        err.status === 429
+          ? 'Recibimos demasiados intentos desde tu conexión. Espera unos minutos e inténtalo de nuevo.'
+          : 'No pudimos enviar tu registro. Revisa tu conexión e inténtalo de nuevo.',
+      )
       setStatus('error')
     }
   }

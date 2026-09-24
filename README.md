@@ -24,6 +24,12 @@ src/
   utils/        validation.js: validación de nombre, teléfono y correo
 ```
 
+## Guardar los registros en MySQL (Railway)
+
+La carpeta [`server/`](server/README.md) contiene la API que guarda los registros en MySQL.
+Una vez desplegada en Railway, pon su URL (`https://<dominio>.up.railway.app/api/leads`) como
+secreto `VITE_LEADS_ENDPOINT` del repositorio en GitHub y vuelve a ejecutar el deploy.
+
 ## Conectar el formulario a un servicio real
 
 Por defecto el formulario **simula** el envío (modo demo). Para guardar los registros:

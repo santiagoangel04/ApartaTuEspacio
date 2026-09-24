@@ -32,7 +32,9 @@ export async function submitLead({ name, phone, email, consent }) {
   })
 
   if (!response.ok) {
-    throw new Error(`Error ${response.status} al registrar el interesado`)
+    const error = new Error(`Error ${response.status} al registrar el interesado`)
+    error.status = response.status
+    throw error
   }
   return { ok: true }
 }
