@@ -59,9 +59,6 @@ export default function LeadForm() {
     event.preventDefault()
     if (isLoading) return
 
-    // Honeypot anti-spam: los humanos no ven ni llenan este campo.
-    if (event.currentTarget.elements.company?.value) return
-
     setTouched({ name: true, phone: true, email: true, consent: true })
     const firstInvalid = FIELD_ORDER.find((key) => validators[key](values[key]))
     if (firstInvalid) {
@@ -182,9 +179,6 @@ export default function LeadForm() {
           disabled={isLoading}
         />
       </Field>
-
-      {/* Honeypot anti-spam (oculto para usuarios) */}
-      <input type="text" name="company" tabIndex={-1} autoComplete="off" className="lead-form__hp" aria-hidden="true" />
 
       <div className={`consent ${touched.consent && errors.consent ? 'consent--error' : ''}`}>
         <label className="consent__label">

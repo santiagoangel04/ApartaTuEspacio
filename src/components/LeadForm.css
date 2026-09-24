@@ -203,14 +203,6 @@
 }
 
 /* ---------- Envío ---------- */
-.lead-form__hp {
-  position: absolute;
-  left: -9999px;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-}
-
 .lead-form__alert {
   display: flex;
   align-items: flex-start;
