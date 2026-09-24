@@ -1,7 +1,7 @@
 {
   "name": "apartatuespacio-api",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "API que recibe los registros de la landing de ApartaTuEspacio y los guarda en PostgreSQL.",
   "type": "module",
   "main": "index.js",
