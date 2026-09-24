@@ -24,9 +24,9 @@ src/
   utils/        validation.js: validación de nombre, teléfono y correo
 ```
 
-## Guardar los registros en MySQL (Railway)
+## Guardar los registros en PostgreSQL (Railway)
 
-La carpeta [`server/`](server/README.md) contiene la API que guarda los registros en MySQL.
+La carpeta [`server/`](server/README.md) contiene la API que guarda los registros en PostgreSQL.
 Una vez desplegada en Railway, pon su URL (`https://<dominio>.up.railway.app/api/leads`) como
 secreto `VITE_LEADS_ENDPOINT` del repositorio en GitHub y vuelve a ejecutar el deploy.
 

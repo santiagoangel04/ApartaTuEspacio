@@ -1,36 +1,42 @@
 import express from 'express'
 import cors from 'cors'
-import mysql from 'mysql2/promise'
+import pg from 'pg'
 import { normalizeLead, validateLead } from './validation.js'
 
 const PORT = process.env.PORT || 3000
-// Railway inyecta MYSQL_URL al referenciar la base de datos: ${{MySQL.MYSQL_URL}}
-const DATABASE_URL = process.env.MYSQL_URL || process.env.DATABASE_URL
+// En Railway se define como referencia al servicio de Postgres: ${{Postgres.DATABASE_URL}}
+const DATABASE_URL = process.env.DATABASE_URL
 const ALLOWED_ORIGINS = (process.env.ALLOWED_ORIGINS || 'https://santiagoangel04.github.io,http://localhost:5173')
   .split(',')
   .map((o) => o.trim())
   .filter(Boolean)
 
 if (!DATABASE_URL) {
-  console.error('Falta la variable MYSQL_URL con la conexión a MySQL.')
+  console.error('Falta la variable DATABASE_URL con la conexión a PostgreSQL.')
   process.exit(1)
 }
 
-const pool = mysql.createPool({ uri: DATABASE_URL, connectionLimit: 5, waitForConnections: true })
+// La red interna de Railway (*.railway.internal) no usa SSL. Si se usa la URL pública, define PGSSL=true.
+const pool = new pg.Pool({
+  connectionString: DATABASE_URL,
+  max: 5,
+  ssl: process.env.PGSSL === 'true' ? { rejectUnauthorized: false } : false,
+})
+
+pool.on('error', (err) => console.error('Error inesperado en PostgreSQL:', err.message))
 
 async function ensureSchema() {
   await pool.query(`
     CREATE TABLE IF NOT EXISTS leads (
-      id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+      id SERIAL PRIMARY KEY,
       name VARCHAR(60) NOT NULL,
       phone VARCHAR(10) NOT NULL,
-      email VARCHAR(120) NOT NULL,
-      consent TINYINT(1) NOT NULL DEFAULT 1,
+      email VARCHAR(120) NOT NULL UNIQUE,
+      consent BOOLEAN NOT NULL DEFAULT TRUE,
       source VARCHAR(60) NOT NULL DEFAULT 'landing',
-      created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-      updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-      UNIQUE KEY uniq_email (email)
-    ) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+      updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
   `)
 }
 
@@ -80,11 +86,12 @@ app.post('/api/leads', rateLimit, async (req, res) => {
 
   try {
     // Si el correo ya estaba registrado se actualizan sus datos en vez de duplicarlo.
-    await pool.execute(
+    await pool.query(
       `INSERT INTO leads (name, phone, email, consent, source)
-       VALUES (?, ?, ?, ?, ?)
-       ON DUPLICATE KEY UPDATE name = VALUES(name), phone = VALUES(phone), consent = VALUES(consent)`,
-      [lead.name, lead.phone, lead.email, lead.consent ? 1 : 0, lead.source],
+       VALUES ($1, $2, $3, $4, $5)
+       ON CONFLICT (email) DO UPDATE
+         SET name = EXCLUDED.name, phone = EXCLUDED.phone, consent = EXCLUDED.consent, updated_at = now()`,
+      [lead.name, lead.phone, lead.email, lead.consent, lead.source],
     )
     res.status(201).json({ ok: true })
   } catch (err) {

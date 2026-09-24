@@ -1,12 +1,13 @@
 # API de registros · ApartaTuEspacio
 
-Servidor Express que recibe los registros del formulario y los guarda en MySQL (Railway).
+Servidor Express que recibe los registros del formulario y los guarda en PostgreSQL (Railway).
 
 ```
-Landing (GitHub Pages) ──POST /api/leads──▶ API (Railway) ──▶ MySQL (Railway)
+Landing (GitHub Pages) ──POST /api/leads──▶ API (Railway) ──▶ PostgreSQL (Railway)
 ```
 
-La landing nunca se conecta directo a MySQL: las credenciales solo viven en Railway.
+La landing nunca se conecta directo a la base de datos: las credenciales solo viven en Railway.
+**Nunca pongas la URL de la base de datos (con su contraseña) en el código ni en el repositorio.**
 
 ## Endpoints
 
@@ -21,27 +22,28 @@ La landing nunca se conecta directo a MySQL: las credenciales solo viven en Rail
 
 ## Variables de entorno (en Railway)
 
-| Variable          | Valor                                                                 |
-|-------------------|-----------------------------------------------------------------------|
-| `MYSQL_URL`       | `${{MySQL.MYSQL_URL}}` (referencia al servicio MySQL del proyecto)     |
-| `ALLOWED_ORIGINS` | `https://santiagoangel04.github.io` (opcional; ese es el valor por defecto) |
+| Variable          | Valor                                                                        |
+|-------------------|------------------------------------------------------------------------------|
+| `DATABASE_URL`    | `${{Postgres.DATABASE_URL}}` (referencia al servicio Postgres del proyecto)   |
+| `ALLOWED_ORIGINS` | `https://santiagoangel04.github.io` (opcional; ese es el valor por defecto)  |
+| `PGSSL`           | Solo `true` si usas la URL pública de Postgres en vez de la interna          |
 
 `PORT` lo asigna Railway automáticamente.
 
 ## Despliegue en Railway
 
-1. En el proyecto de Railway donde está MySQL: **+ Create → GitHub Repo** → `ApartaTuEspacio`.
+1. En el proyecto de Railway donde está Postgres: **+ Create → GitHub Repo** → `ApartaTuEspacio`.
 2. En el nuevo servicio → **Settings → Source → Root Directory**: `/server`.
-3. **Variables** → agrega `MYSQL_URL` = `${{MySQL.MYSQL_URL}}`.
+3. **Variables** → agrega `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`.
 4. **Settings → Networking → Generate Domain**.
 5. Abre `https://<tu-dominio>.up.railway.app/health`: debe responder `{"ok":true,"db":"up"}`.
 
 ## Ver los registros
 
-En Railway abre el servicio **MySQL → Data → leads**, o desde la terminal:
+En Railway abre el servicio **Postgres → Data → leads**, o desde la terminal:
 
 ```bash
-railway connect MySQL
+railway connect Postgres
 ```
 
 ```sql
