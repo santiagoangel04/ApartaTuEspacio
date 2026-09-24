@@ -7,7 +7,20 @@
  *
  * Si no hay endpoint configurado, se simula el envío (modo demo) para validar el flujo en frontend.
  */
-const ENDPOINT = import.meta.env.VITE_LEADS_ENDPOINT
+const ENDPOINT = normalizeEndpoint(import.meta.env.VITE_LEADS_ENDPOINT)
+
+/**
+ * Acepta la URL completa o solo el dominio de la API:
+ * "mi-api.up.railway.app" → "https://mi-api.up.railway.app/api/leads".
+ * Sin "https://" el navegador la trataría como una ruta relativa dentro de la propia landing.
+ */
+function normalizeEndpoint(value) {
+  const raw = (value || '').trim()
+  if (!raw) return ''
+  const url = new URL(/^https?:\/\//i.test(raw) ? raw : `https://${raw}`)
+  if (url.pathname === '/' || url.pathname === '') url.pathname = '/api/leads'
+  return url.toString()
+}
 
 export async function submitLead({ name, phone, email, consent }) {
   const payload = {
