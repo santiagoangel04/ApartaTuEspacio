@@ -1,0 +1,331 @@
+.lead-card {
+  position: relative;
+  max-width: 500px;
+  margin: 0 auto;
+  color: var(--text);
+  border-radius: var(--radius-lg);
+  padding: 36px 32px 28px;
+  /* Borde luminoso degradado */
+  border: 2px solid transparent;
+  background: linear-gradient(var(--surface), var(--surface)) padding-box,
+    linear-gradient(140deg, var(--blue-500), var(--cyan-400), rgba(255, 255, 255, 0.15) 60%) border-box;
+  box-shadow: 0 40px 80px -30px rgba(0, 0, 0, 0.6);
+}
+
+.lead-form__head {
+  margin-bottom: 24px;
+}
+
+.lead-form__pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #15803d;
+  background: rgba(34, 197, 94, 0.12);
+  padding: 5px 12px;
+  border-radius: 999px;
+  margin-bottom: 14px;
+}
+
+.lead-form__pill-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--green-500);
+}
+
+.lead-form__head h3 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.lead-form__head p {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+/* ---------- Campos ---------- */
+.field {
+  margin-bottom: 6px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 7px;
+}
+
+.field__control {
+  position: relative;
+}
+
+.field__icon {
+  position: absolute;
+  left: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #8a98b3;
+  pointer-events: none;
+  transition: color 0.2s;
+}
+
+.field__ok {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--green-500);
+  animation: pop 0.3s var(--ease);
+}
+
+.field input {
+  width: 100%;
+  height: 54px;
+  padding: 0 44px 0 46px;
+  border-radius: 14px;
+  border: 1.5px solid var(--border);
+  background: #f8faff;
+  color: var(--text);
+  font-size: 1rem; /* 16px evita el zoom automático en iOS */
+  transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+  -webkit-appearance: none;
+  appearance: none;
+}
+
+.field input::placeholder {
+  color: #9aa6bd;
+}
+
+.field input:hover {
+  border-color: #c8d3ea;
+}
+
+.field input:focus {
+  outline: none;
+  background: #fff;
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+.field__control:focus-within .field__icon {
+  color: var(--blue-600);
+}
+
+.field--valid input {
+  border-color: rgba(34, 197, 94, 0.55);
+}
+
+.field--error input {
+  border-color: var(--red-500);
+  background: #fff7f7;
+}
+
+.field--error input:focus {
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+
+.field--error .field__icon {
+  color: var(--red-500);
+}
+
+.field__error {
+  min-height: 22px;
+  padding-top: 4px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #dc2626;
+  line-height: 1.35;
+}
+
+.field input:disabled {
+  opacity: 0.7;
+}
+
+/* ---------- Checkbox ---------- */
+.consent {
+  margin: 4px 0 10px;
+}
+
+.consent__label {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: 0.88rem;
+  color: #3c4a66;
+  line-height: 1.45;
+  cursor: pointer;
+}
+
+.consent__label input {
+  position: absolute;
+  opacity: 0;
+  width: 1px;
+  height: 1px;
+}
+
+.consent__box {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 7px;
+  border: 1.5px solid #c3cde2;
+  background: #fff;
+  display: grid;
+  place-items: center;
+  color: transparent;
+  transition: background 0.2s, border-color 0.2s, color 0.2s, transform 0.2s;
+}
+
+.consent__label:hover .consent__box {
+  border-color: var(--blue-500);
+}
+
+.consent__label input:checked + .consent__box {
+  background: var(--grad-action);
+  border-color: transparent;
+  color: #fff;
+  transform: scale(1.05);
+}
+
+.consent__label input:focus-visible + .consent__box {
+  outline: 3px solid var(--cyan-400);
+  outline-offset: 2px;
+}
+
+.consent--error .consent__box {
+  border-color: var(--red-500);
+}
+
+/* ---------- Envío ---------- */
+.lead-form__hp {
+  position: absolute;
+  left: -9999px;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+}
+
+.lead-form__alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  margin-bottom: 14px;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+}
+
+.lead-form__alert svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.lead-form__submit {
+  margin-top: 4px;
+  height: 58px;
+}
+
+.lead-form__submit:disabled {
+  cursor: progress;
+  opacity: 0.85;
+  transform: none;
+}
+
+.lead-form__privacy {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  color: #8190ab;
+  text-align: center;
+}
+
+.lead-form__privacy svg {
+  flex-shrink: 0;
+}
+
+.spin {
+  animation: spin 0.9s linear infinite;
+}
+
+/* ---------- Éxito ---------- */
+.lead-success {
+  text-align: center;
+  padding: 48px 32px;
+  animation: pop 0.5s var(--ease);
+}
+
+.lead-success__icon {
+  width: 76px;
+  height: 76px;
+  margin: 0 auto 22px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, #16a34a, var(--green-400));
+  box-shadow: 0 0 0 10px rgba(34, 197, 94, 0.14), 0 16px 30px -10px rgba(34, 197, 94, 0.6);
+}
+
+.lead-success h3 {
+  font-size: 1.7rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin-bottom: 10px;
+}
+
+.lead-success p {
+  color: var(--muted);
+  font-size: 1.05rem;
+  max-width: 360px;
+  margin: 0 auto;
+}
+
+.lead-success__again {
+  margin-top: 26px;
+  border: 0;
+  background: none;
+  color: var(--blue-600);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes pop {
+  from {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+}
+
+@media (max-width: 560px) {
+  .lead-card {
+    padding: 26px 20px 22px;
+    border-radius: 24px;
+  }
+  .lead-form__head h3 {
+    font-size: 1.35rem;
+  }
+  .lead-success {
+    padding: 40px 22px;
+  }
+}

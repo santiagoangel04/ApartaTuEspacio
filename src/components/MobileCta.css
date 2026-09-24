@@ -1,0 +1,26 @@
+.mobile-cta {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .mobile-cta {
+    display: block;
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 40;
+    padding: 12px 16px calc(12px + env(safe-area-inset-bottom));
+    background: linear-gradient(180deg, rgba(245, 247, 252, 0), rgba(245, 247, 252, 0.92) 30%);
+    transform: translateY(110%);
+    visibility: hidden;
+    transition: transform 0.4s var(--ease), visibility 0.4s;
+  }
+  .mobile-cta.is-shown {
+    transform: none;
+    visibility: visible;
+  }
+  .mobile-cta .btn {
+    white-space: normal;
+  }
+}

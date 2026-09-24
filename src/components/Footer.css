@@ -1,0 +1,60 @@
+.footer {
+  background: var(--navy-950);
+  color: #9fb0d6;
+  padding: 56px 0 28px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.footer__inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+  padding-bottom: 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.footer__brand p {
+  margin-top: 10px;
+  font-size: 0.95rem;
+}
+
+.footer__bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  padding-top: 22px;
+  font-size: 0.85rem;
+}
+
+.footer__status {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer__status span {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--amber-400);
+}
+
+@media (max-width: 640px) {
+  .footer {
+    /* Espacio para la barra de CTA fija en móvil */
+    padding-bottom: 104px;
+  }
+  .footer__inner,
+  .footer__bottom {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .footer__inner .btn {
+    width: 100%;
+    white-space: normal;
+  }
+}

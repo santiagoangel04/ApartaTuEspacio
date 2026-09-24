@@ -1,0 +1,107 @@
+.audience {
+  background: linear-gradient(180deg, #fff 0%, var(--bg) 100%);
+}
+
+.audience__grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 22px;
+}
+
+.audience-card {
+  position: relative;
+  padding: 30px 28px 32px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  overflow: hidden;
+  isolation: isolate;
+  transition: transform 0.35s var(--ease), box-shadow 0.35s var(--ease),
+    opacity 0.8s var(--ease) var(--delay, 0ms), translate 0.8s var(--ease) var(--delay, 0ms);
+}
+
+.audience-card::after {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  width: 220px;
+  height: 220px;
+  right: -90px;
+  top: -90px;
+  border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(6, 182, 212, 0.18), transparent);
+  transition: transform 0.6s var(--ease);
+}
+
+.audience-card.is-visible:hover {
+  transform: translateY(-6px);
+  box-shadow: var(--shadow);
+}
+
+.audience-card:hover::after {
+  transform: scale(1.5);
+}
+
+.audience-card__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 22px;
+}
+
+.audience-card__emoji {
+  width: 64px;
+  height: 64px;
+  display: grid;
+  place-items: center;
+  font-size: 2rem;
+  border-radius: 20px;
+  background: linear-gradient(135deg, #e8f0ff, #e0f9fd);
+  border: 1px solid #d6e4ff;
+  transition: transform 0.4s var(--ease);
+}
+
+.audience-card:hover .audience-card__emoji {
+  transform: rotate(-6deg) scale(1.06);
+}
+
+.audience-card__tag {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--blue-600);
+  background: rgba(37, 99, 235, 0.08);
+  padding: 5px 12px;
+  border-radius: 999px;
+}
+
+.audience-card h3 {
+  font-size: 1.2rem;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 8px;
+}
+
+.audience-card p {
+  color: var(--muted);
+}
+
+@media (max-width: 900px) {
+  .audience__grid {
+    grid-template-columns: 1fr;
+    max-width: 560px;
+    margin: 0 auto;
+    gap: 14px;
+  }
+  .audience-card {
+    padding: 22px;
+  }
+  .audience-card__top {
+    margin-bottom: 14px;
+  }
+  .audience-card__emoji {
+    width: 56px;
+    height: 56px;
+    font-size: 1.7rem;
+  }
+}
