@@ -1,3 +1,4 @@
+import { resolve } from 'node:path'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
@@ -8,4 +9,13 @@ const base = process.env.GITHUB_ACTIONS ? '/ApartaTuEspacio/' : '/'
 export default defineConfig({
   base,
   plugins: [react()],
+  build: {
+    rollupOptions: {
+      // Dos páginas independientes: la landing y la encuesta NPS (no enlazada desde la landing).
+      input: {
+        main: resolve(__dirname, 'index.html'),
+        encuesta: resolve(__dirname, 'encuesta/index.html'),
+      },
+    },
+  },
 })

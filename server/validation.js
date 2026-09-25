@@ -30,6 +30,28 @@ export function normalizeLead(body = {}) {
   }
 }
 
+const isAllowedEmail = (email) =>
+  email.length <= 120 &&
+  EMAIL_RE.test(email) &&
+  ALLOWED_EMAIL_DOMAINS.includes(email.slice(email.lastIndexOf('@') + 1))
+
+// ---------- Encuesta NPS ----------
+export function normalizeNps(body = {}) {
+  return {
+    score: body.score,
+    comment: String(body.comment ?? '').trim().slice(0, 500),
+    email: String(body.email ?? '').trim().toLowerCase(),
+    source: String(body.source ?? 'encuesta-nps').slice(0, 60),
+  }
+}
+
+export function validateNps(nps) {
+  const errors = {}
+  if (!Number.isInteger(nps.score) || nps.score < 0 || nps.score > 10) errors.score = 'Puntaje inválido (0 a 10)'
+  if (nps.email && !isAllowedEmail(nps.email)) errors.email = 'Correo inválido o proveedor no permitido'
+  return errors
+}
+
 export function validateLead(lead) {
   const errors = {}
   if (!NAME_RE.test(lead.name)) errors.name = 'Nombre inválido'

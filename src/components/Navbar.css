@@ -80,35 +80,6 @@
   display: none;
 }
 
-/* Logo */
-.logo {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  font-weight: 700;
-  font-size: 1.15rem;
-  letter-spacing: -0.02em;
-  color: var(--text);
-}
-
-.logo--light {
-  color: #fff;
-}
-
-.logo__text strong {
-  font-weight: 800;
-  background: var(--grad-action);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
-
-.logo--light .logo__text strong {
-  background: linear-gradient(100deg, #60a5fa, var(--cyan-400));
-  -webkit-background-clip: text;
-  background-clip: text;
-}
-
 @media (max-width: 900px) {
   .nav__links {
     display: none;

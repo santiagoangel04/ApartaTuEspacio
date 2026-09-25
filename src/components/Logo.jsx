@@ -1,3 +1,5 @@
+import './Logo.css'
+
 export default function Logo({ light = false }) {
   return (
     <span className={`logo ${light ? 'logo--light' : ''}`}>

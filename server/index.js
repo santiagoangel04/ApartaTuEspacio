@@ -1,7 +1,7 @@
 import express from 'express'
 import cors from 'cors'
 import pg from 'pg'
-import { normalizeLead, validateLead } from './validation.js'
+import { normalizeLead, validateLead, normalizeNps, validateNps } from './validation.js'
 
 const PORT = process.env.PORT || 3000
 // En Railway se define como referencia al servicio de Postgres: ${{Postgres.DATABASE_URL}}
@@ -36,6 +36,16 @@ async function ensureSchema() {
       source VARCHAR(60) NOT NULL DEFAULT 'landing',
       created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
       updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+    )
+  `)
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS nps_responses (
+      id SERIAL PRIMARY KEY,
+      score SMALLINT NOT NULL CHECK (score BETWEEN 0 AND 10),
+      comment VARCHAR(500),
+      email VARCHAR(120),
+      source VARCHAR(60) NOT NULL DEFAULT 'encuesta-nps',
+      created_at TIMESTAMPTZ NOT NULL DEFAULT now()
     )
   `)
 }
@@ -73,7 +83,7 @@ app.get('/', (_req, res) => {
   res.json({
     ok: true,
     service: 'API de registros de ApartaTuEspacio',
-    endpoints: { health: 'GET /health', leads: 'POST /api/leads' },
+    endpoints: { health: 'GET /health', leads: 'POST /api/leads', nps: 'POST /api/nps' },
   })
 })
 
@@ -110,6 +120,25 @@ app.post('/api/leads', rateLimit, async (req, res) => {
   } catch (err) {
     console.error('Error guardando lead:', err.message)
     res.status(500).json({ ok: false, error: 'No se pudo guardar el registro' })
+  }
+})
+
+app.post('/api/nps', rateLimit, async (req, res) => {
+  const nps = normalizeNps(req.body)
+  const errors = validateNps(nps)
+  if (Object.keys(errors).length) {
+    return res.status(400).json({ ok: false, errors })
+  }
+
+  try {
+    await pool.query(
+      `INSERT INTO nps_responses (score, comment, email, source) VALUES ($1, $2, $3, $4)`,
+      [nps.score, nps.comment || null, nps.email || null, nps.source],
+    )
+    res.status(201).json({ ok: true })
+  } catch (err) {
+    console.error('Error guardando NPS:', err.message)
+    res.status(500).json({ ok: false, error: 'No se pudo guardar la respuesta' })
   }
 })
 

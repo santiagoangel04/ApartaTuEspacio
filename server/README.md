@@ -14,9 +14,10 @@ La landing nunca se conecta directo a la base de datos: las credenciales solo vi
 | Método | Ruta         | Descripción                                             |
 |--------|--------------|---------------------------------------------------------|
 | POST   | `/api/leads` | Guarda un registro `{ name, phone, email, consent }`    |
+| POST   | `/api/nps`   | Guarda una respuesta NPS `{ score (0-10), comment?, email? }` |
 | GET    | `/health`    | Verifica que la API y la base de datos respondan        |
 
-- La tabla `leads` se crea sola al arrancar.
+- Las tablas `leads` y `nps_responses` se crean solas al arrancar.
 - Si un correo ya existe, se actualizan sus datos (no se duplica).
 - Máximo 10 registros por IP cada 15 minutos.
 
@@ -48,4 +49,21 @@ railway connect Postgres
 
 ```sql
 SELECT name, phone, email, created_at FROM leads ORDER BY created_at DESC;
+```
+
+## Resultados de la encuesta NPS
+
+La encuesta está en `https://santiagoangel04.github.io/ApartaTuEspacio/encuesta/` (no se enlaza desde la landing).
+
+NPS = % promotores (9–10) − % detractores (0–6):
+
+```sql
+SELECT
+  COUNT(*) AS respuestas,
+  ROUND(100.0 * (COUNT(*) FILTER (WHERE score >= 9) - COUNT(*) FILTER (WHERE score <= 6)) / NULLIF(COUNT(*), 0)) AS nps
+FROM nps_responses;
+```
+
+```sql
+SELECT score, comment, email, created_at FROM nps_responses ORDER BY created_at DESC;
 ```
