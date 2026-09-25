@@ -3,6 +3,21 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 // Celulares en Colombia (10 dígitos, inician en 3) o fijos con el formato actual (10 dígitos, inician en 60).
 const PHONE_RE = /^(3\d{9}|60\d{8})$/
 
+// Proveedores de correo aceptados. Mantener igual a la lista de server/validation.js.
+export const ALLOWED_EMAIL_DOMAINS = [
+  'gmail.com',
+  'yahoo.com',
+  'yahoo.es',
+  'yahoo.com.co',
+  'hotmail.com',
+  'hotmail.es',
+  'outlook.com',
+  'outlook.es',
+  'live.com',
+]
+
+const emailDomain = (email) => email.slice(email.lastIndexOf('@') + 1).toLowerCase()
+
 export const onlyDigits = (value) => value.replace(/\D/g, '')
 
 /** Normaliza el teléfono: quita el indicativo +57 si viene incluido y deja solo dígitos. */
@@ -39,7 +54,8 @@ export const validators = {
   email(value) {
     const v = value.trim()
     if (!v) return 'Escribe tu correo electrónico.'
-    if (!EMAIL_RE.test(v)) return 'Revisa tu correo. Ej: tucorreo@email.com'
+    if (!EMAIL_RE.test(v)) return 'Revisa tu correo. Ej: tucorreo@gmail.com'
+    if (!ALLOWED_EMAIL_DOMAINS.includes(emailDomain(v))) return 'Usa un correo de Gmail, Yahoo, Hotmail u Outlook.'
     return ''
   },
   consent(value) {

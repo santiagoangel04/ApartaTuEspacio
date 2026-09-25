@@ -4,6 +4,19 @@ const NAME_RE = /^[A-Za-zÀ-ÖØ-öø-ÿÑñ' .-]{2,60}$/
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/
 const PHONE_RE = /^(3\d{9}|60\d{8})$/
 
+// Proveedores de correo aceptados. Mantener igual a la lista de src/utils/validation.js.
+const ALLOWED_EMAIL_DOMAINS = [
+  'gmail.com',
+  'yahoo.com',
+  'yahoo.es',
+  'yahoo.com.co',
+  'hotmail.com',
+  'hotmail.es',
+  'outlook.com',
+  'outlook.es',
+  'live.com',
+]
+
 export function normalizeLead(body = {}) {
   let phone = String(body.phone ?? '').replace(/\D/g, '')
   if (phone.length > 10 && phone.startsWith('57')) phone = phone.slice(2)
@@ -22,6 +35,9 @@ export function validateLead(lead) {
   if (!NAME_RE.test(lead.name)) errors.name = 'Nombre inválido'
   if (!PHONE_RE.test(lead.phone)) errors.phone = 'Teléfono inválido'
   if (lead.email.length > 120 || !EMAIL_RE.test(lead.email)) errors.email = 'Correo inválido'
+  else if (!ALLOWED_EMAIL_DOMAINS.includes(lead.email.slice(lead.email.lastIndexOf('@') + 1))) {
+    errors.email = 'Proveedor de correo no permitido'
+  }
   if (!lead.consent) errors.consent = 'Se requiere autorización de datos'
   return errors
 }

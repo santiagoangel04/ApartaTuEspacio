@@ -167,7 +167,7 @@ export default function LeadForm() {
           autoComplete="email"
           autoCapitalize="none"
           spellCheck={false}
-          placeholder="tucorreo@email.com"
+          placeholder="tucorreo@gmail.com"
           value={values.email}
           onChange={handleChange}
           onBlur={handleBlur}
