@@ -1,0 +1,650 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Métricas · ApartaTuEspacio</title>
+<style>
+  :root {
+    --bg: #f5f7fc;
+    --surface: #ffffff;
+    --surface-2: #f0f3fa;
+    --border: #e3e8f3;
+    --text: #0b1530;
+    --text-2: #3c4a66;
+    --muted: #6b7a96;
+    --grid: #e8ecf5;
+    --bar: #2563eb;
+    --bar-soft: rgba(37, 99, 235, 0.12);
+    --accent: #2563eb;
+    --good: #15803d;
+    --warn: #b45309;
+    --bad: #b91c1c;
+    --shadow: 0 1px 2px rgba(11, 21, 48, 0.05), 0 4px 16px rgba(11, 21, 48, 0.05);
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #070f24;
+      --surface: #0f1a38;
+      --surface-2: #15234a;
+      --border: #22325e;
+      --text: #eef2fb;
+      --text-2: #c3cde4;
+      --muted: #8d9bbd;
+      --grid: #1d2b52;
+      --bar: #4f8ff7;
+      --bar-soft: rgba(79, 143, 247, 0.18);
+      --accent: #60a5fa;
+      --good: #4ade80;
+      --warn: #fbbf24;
+      --bad: #f87171;
+      --shadow: none;
+      color-scheme: dark;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+  button, input, select { font: inherit; }
+  .wrap { max-width: 1120px; margin: 0 auto; padding: 24px 16px 48px; }
+  h1 { font-size: 1.35rem; margin: 0; letter-spacing: -0.01em; }
+  h2 { font-size: 1rem; margin: 0 0 2px; }
+  .sub { color: var(--muted); font-size: 0.85rem; margin: 0; }
+  .num { font-variant-numeric: tabular-nums; }
+
+  /* Login */
+  .login { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+  .login form {
+    width: 100%; max-width: 360px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 28px 24px; box-shadow: var(--shadow);
+  }
+  .login h1 { margin-bottom: 4px; }
+  .login label { display: block; font-weight: 600; font-size: 0.9rem; margin: 20px 0 6px; }
+  .login input {
+    width: 100%; height: 46px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface-2); color: var(--text); font-size: 1rem;
+  }
+  .login input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 38px; padding: 0 14px;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--surface); color: var(--text);
+    font-weight: 600; font-size: 0.88rem; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+  @media (prefers-color-scheme: dark) { .btn.primary { color: #07122b; } }
+  .login .btn { width: 100%; height: 46px; margin-top: 16px; }
+  .error { color: var(--bad); font-size: 0.85rem; font-weight: 600; min-height: 20px; margin: 8px 0 0; }
+
+  /* Encabezado y filtros */
+  .top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 20px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .seg { display: inline-flex; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; background: var(--surface); }
+  .seg button { border: 0; background: none; color: var(--text-2); height: 36px; padding: 0 12px; font-weight: 600; font-size: 0.85rem; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: var(--bar-soft); color: var(--accent); }
+  .note { font-size: 0.82rem; color: var(--muted); margin: -8px 0 20px; }
+
+  /* Tarjetas */
+  .grid { display: grid; gap: 16px; }
+  .kpis { grid-template-columns: repeat(5, 1fr); margin-bottom: 16px; }
+  .two { grid-template-columns: 1fr 1fr; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 18px; box-shadow: var(--shadow); min-width: 0; }
+  .card-head { margin-bottom: 14px; }
+  .kpi .label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
+  .kpi .value { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
+  .kpi .hint { font-size: 0.78rem; color: var(--muted); }
+  .stack > .card + .card { margin-top: 16px; }
+
+  /* Gráfica de barras (SVG) */
+  .chart { position: relative; }
+  .chart svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .chart .gridline { stroke: var(--grid); stroke-width: 1; }
+  .chart .axis-label { fill: var(--muted); font-size: 11px; }
+  .chart .bar { fill: var(--bar); }
+  .chart .hit { fill: transparent; cursor: default; }
+  .chart .hit:hover + .bar, .chart .bar.active { opacity: 0.75; }
+  .tooltip {
+    position: absolute; pointer-events: none; background: var(--text); color: var(--surface); font-size: 0.8rem;
+    padding: 6px 10px; border-radius: 8px; white-space: nowrap; transform: translate(-50%, -100%); margin-top: -8px;
+    opacity: 0; transition: opacity 0.12s;
+  }
+  .tooltip.show { opacity: 1; }
+  details { margin-top: 10px; }
+  summary { cursor: pointer; color: var(--accent); font-size: 0.82rem; font-weight: 600; }
+
+  /* Filas con barra (embudo, fuentes, dispositivos) */
+  .rows { display: grid; gap: 10px; }
+  .row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; font-size: 0.88rem; }
+  .row .name { color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .row .val { font-weight: 600; text-align: right; }
+  .row .val small { color: var(--muted); font-weight: 500; margin-left: 6px; }
+  .track { grid-column: 1 / -1; height: 8px; border-radius: 4px; background: var(--surface-2); overflow: hidden; }
+  .fill { height: 100%; border-radius: 4px; background: var(--bar); min-width: 2px; }
+
+  /* Tablas */
+  table { width: 100%; border-collapse: collapse; font-size: 0.86rem; }
+  th, td { text-align: left; padding: 9px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.03em; }
+  td.num, th.num { text-align: right; }
+  .table-wrap { overflow-x: auto; }
+  .empty { color: var(--muted); font-size: 0.88rem; padding: 12px 0; }
+
+
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  [hidden] { display: none !important; }
+
+  /* En vivo */
+  .live { margin-bottom: 16px; }
+  .live-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .live-badge { display: inline-flex; align-items: center; gap: 8px; font-size: 0.8rem; font-weight: 700; color: var(--good); }
+  .live-badge .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--good); animation: pulse 1.6s infinite; }
+  .live-badge.paused { color: var(--muted); }
+  .live-badge.paused .dot { background: var(--muted); animation: none; }
+  @keyframes pulse { 0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--good) 60%, transparent); } 100% { box-shadow: 0 0 0 9px transparent; } }
+  .live-grid { display: grid; grid-template-columns: 220px 1fr; gap: 20px; align-items: start; }
+  .now .value { font-size: 3rem; font-weight: 700; line-height: 1; letter-spacing: -0.03em; }
+  .now .label { font-size: 0.85rem; color: var(--muted); margin-top: 6px; }
+  .today { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 16px; margin-top: 18px; }
+  .today div { font-size: 0.8rem; color: var(--muted); }
+  .today strong { display: block; font-size: 1.15rem; color: var(--text); }
+  .feed { list-style: none; margin: 0; padding: 0; max-height: 280px; overflow-y: auto; }
+  .feed li { display: flex; justify-content: space-between; gap: 12px; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 0.86rem; }
+  .feed li:last-child { border-bottom: 0; }
+  .feed .what { color: var(--text-2); }
+  .feed .when { color: var(--muted); white-space: nowrap; font-size: 0.8rem; }
+  .feed .new { animation: flash 1.2s ease-out; }
+  @keyframes flash { from { background: var(--bar-soft); } to { background: transparent; } }
+  @media (prefers-reduced-motion: reduce) { .live-badge .dot, .feed .new { animation: none; } }
+  @media (max-width: 720px) { .live-grid { grid-template-columns: 1fr; } }
+
+  @media (max-width: 1100px) { .kpis { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 720px) {
+    .two { grid-template-columns: 1fr; }
+    .kpis { grid-template-columns: repeat(2, 1fr); }
+    .kpi .value { font-size: 1.6rem; }
+  }
+</style>
+</head>
+<body>
+
+<section id="login" class="login" hidden>
+  <form id="login-form" autocomplete="off">
+    <h1>Métricas privadas</h1>
+    <p class="sub">ApartaTuEspacio · solo para el equipo</p>
+    <label for="password">Contraseña</label>
+    <input id="password" type="password" autocomplete="current-password" required />
+    <p id="login-error" class="error" role="alert"></p>
+    <button class="btn primary" type="submit">Entrar</button>
+  </form>
+</section>
+
+<main id="app" class="wrap" hidden>
+  <div class="top">
+    <div>
+      <h1>Métricas de la landing</h1>
+      <p class="sub" id="updated">Cargando…</p>
+    </div>
+    <div class="controls">
+      <div class="seg" role="group" aria-label="Periodo">
+        <button type="button" data-days="7" aria-pressed="false">7 días</button>
+        <button type="button" data-days="30" aria-pressed="true">30 días</button>
+        <button type="button" data-days="90" aria-pressed="false">90 días</button>
+      </div>
+      <button class="btn" type="button" id="refresh">Actualizar</button>
+      <button class="btn" type="button" id="logout">Salir</button>
+    </div>
+  </div>
+  <p class="note" id="tracking-note"></p>
+  <p id="app-error" class="error" role="alert"></p>
+
+  <section class="card live" aria-labelledby="live-title">
+    <div class="live-head">
+      <div>
+        <h2 id="live-title">En este momento</h2>
+        <p class="sub" id="live-updated">Conectando…</p>
+      </div>
+      <span class="live-badge" id="live-badge"><span class="dot" aria-hidden="true"></span><span id="live-state">En vivo · cada 10 s</span></span>
+    </div>
+    <div class="live-grid">
+      <div class="now">
+        <div class="value num" id="active-now">–</div>
+        <div class="label">personas en la landing ahora</div>
+        <div class="today" id="today"></div>
+      </div>
+      <div>
+        <div class="chart" id="chart-minutes" aria-label="Personas activas por minuto, últimos 30 minutos"></div>
+        <p class="sub" style="margin-top:4px">Personas activas por minuto · últimos 30 minutos</p>
+      </div>
+    </div>
+    <div class="grid two" style="margin-top:18px">
+      <div>
+        <h2 style="margin-bottom:6px">Quiénes están ahora</h2>
+        <div class="table-wrap" id="active-list"></div>
+      </div>
+      <div>
+        <h2 style="margin-bottom:6px">Últimas acciones</h2>
+        <ul class="feed" id="feed" aria-live="polite"></ul>
+      </div>
+    </div>
+  </section>
+
+  <h2 style="margin:26px 0 12px">Resumen del periodo</h2>
+  <section class="grid kpis" id="kpis" aria-label="Indicadores"></section>
+
+  <div class="stack">
+    <section class="card">
+      <div class="card-head">
+        <h2>Visitantes únicos por día</h2>
+        <p class="sub">Personas distintas que abrieron la landing cada día (hora de Colombia)</p>
+      </div>
+      <div class="chart" id="chart-visitors"></div>
+      <details><summary>Ver tabla por día</summary><div class="table-wrap" id="daily-table"></div></details>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Registros por día</h2>
+        <p class="sub">Personas que dejaron sus datos en el formulario</p>
+      </div>
+      <div class="chart" id="chart-leads"></div>
+    </section>
+
+    <div class="grid two">
+      <section class="card">
+        <div class="card-head">
+          <h2>Embudo</h2>
+          <p class="sub">Porcentaje sobre los visitantes únicos del periodo</p>
+        </div>
+        <div class="rows" id="funnel"></div>
+      </section>
+      <section class="card">
+        <div class="card-head">
+          <h2>Fuentes de tráfico</h2>
+          <p class="sub">Enlace o sitio desde el que la gente llegó a tu landing (utm_source o referencia)</p>
+        </div>
+        <div class="rows" id="sources"></div>
+      </section>
+    </div>
+
+    <div class="grid two">
+      <section class="card">
+        <div class="card-head">
+          <h2>Dispositivos</h2>
+          <p class="sub">Visitantes únicos por tipo de pantalla</p>
+        </div>
+        <div class="rows" id="devices"></div>
+      </section>
+      <section class="card">
+        <div class="card-head">
+          <h2>Clics en botones</h2>
+          <p class="sub">Botones que llevan al formulario, por sección</p>
+        </div>
+        <div class="rows" id="ctas"></div>
+      </section>
+    </div>
+
+    <section class="card">
+      <div class="card-head" style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;flex-wrap:wrap">
+        <div>
+          <h2>Últimos registros</h2>
+          <p class="sub">Los 50 más recientes, de todo el tiempo</p>
+        </div>
+        <button class="btn" type="button" id="export">Descargar CSV</button>
+      </div>
+      <div class="table-wrap" id="leads"></div>
+    </section>
+  </div>
+</main>
+
+<script>
+(() => {
+  const KEY = 'ate_admin_token'
+  const $ = (id) => document.getElementById(id)
+  const nf = new Intl.NumberFormat('es-CO')
+  const pct = (a, b) => (b ? Math.round((a / b) * 1000) / 10 : 0)
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]))
+  const dateTime = (iso) => new Date(iso).toLocaleString('es-CO', { dateStyle: 'medium', timeStyle: 'short', timeZone: 'America/Bogota' })
+  const shortDay = (ymd) => { const [, m, d] = ymd.split('-'); return `${Number(d)}/${Number(m)}` }
+  const longDay = (ymd) => new Date(`${ymd}T12:00:00`).toLocaleDateString('es-CO', { weekday: 'short', day: 'numeric', month: 'short' })
+
+  const LIVE_MS = 10_000 // datos en vivo
+  const FULL_MS = 60_000 // resumen del periodo
+
+  // Solo se guarda el token de sesión (vence en 12 h), nunca la contraseña.
+  let token = null
+  let days = 30
+  let data = null
+  let liveTimer = null
+  let fullTimer = null
+  let seenFeed = new Set()
+
+  try { token = sessionStorage.getItem(KEY) } catch {}
+
+  async function api(path) {
+    const res = await fetch(path, { headers: { Authorization: `Bearer ${token}` }, cache: 'no-store' })
+    const body = await res.json().catch(() => ({}))
+    if (!res.ok) { const e = new Error(body.error || `Error ${res.status}`); e.status = res.status; throw e }
+    return body
+  }
+
+  function showLogin(message = '') {
+    stopTimers()
+    $('app').hidden = true
+    $('login').hidden = false
+    $('login-error').textContent = message
+    $('password').focus()
+  }
+
+  function handleError(err) {
+    if (err.status === 401 || err.status === 503) {
+      try { sessionStorage.removeItem(KEY) } catch {}
+      token = null
+      showLogin(err.message)
+    } else {
+      $('app-error').textContent = err.message
+    }
+  }
+
+  async function refresh() {
+    try {
+      data = await api(`/api/admin/metrics?days=${days}`)
+      $('app-error').textContent = ''
+      $('login').hidden = true
+      $('app').hidden = false
+      render(data)
+      startTimers()
+      refreshLive()
+    } catch (err) {
+      handleError(err)
+    }
+  }
+
+  async function refreshLive() {
+    try {
+      renderLive(await api('/api/admin/live'))
+      setLiveState(true)
+    } catch (err) {
+      setLiveState(false, 'Sin conexión · reintentando')
+      if (err.status === 401 || err.status === 503) handleError(err)
+    }
+  }
+
+  // Se pausa cuando la pestaña del panel no está visible, para no consultar en vano.
+  function startTimers() {
+    stopTimers()
+    if (document.visibilityState !== 'visible') return setLiveState(false, 'En pausa (pestaña oculta)')
+    liveTimer = setInterval(refreshLive, LIVE_MS)
+    fullTimer = setInterval(async () => {
+      try { data = await api(`/api/admin/metrics?days=${days}`); render(data) } catch (err) { handleError(err) }
+    }, FULL_MS)
+  }
+  function stopTimers() { clearInterval(liveTimer); clearInterval(fullTimer) }
+  document.addEventListener('visibilitychange', () => {
+    if (!token || $('app').hidden) return
+    if (document.visibilityState === 'visible') refresh()
+    else { stopTimers(); setLiveState(false, 'En pausa (pestaña oculta)') }
+  })
+
+  function setLiveState(ok, text) {
+    $('live-badge').classList.toggle('paused', !ok)
+    $('live-state').textContent = ok ? 'En vivo · cada 10 s' : text
+  }
+
+  $('login-form').addEventListener('submit', async (e) => {
+    e.preventDefault()
+    const password = $('password').value
+    $('password').value = ''
+    $('login-error').textContent = ''
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password }),
+      })
+      const body = await res.json().catch(() => ({}))
+      if (!res.ok) throw new Error(body.error || `Error ${res.status}`)
+      token = body.token
+      try { sessionStorage.setItem(KEY, token) } catch {}
+      refresh()
+    } catch (err) {
+      $('login-error').textContent = err.message
+      $('password').focus()
+    }
+  })
+  $('logout').addEventListener('click', () => { try { sessionStorage.removeItem(KEY) } catch {}; token = null; showLogin() })
+  $('refresh').addEventListener('click', refresh)
+  document.querySelectorAll('[data-days]').forEach((b) => b.addEventListener('click', () => {
+    days = Number(b.dataset.days)
+    document.querySelectorAll('[data-days]').forEach((x) => x.setAttribute('aria-pressed', String(x === b)))
+    refresh()
+  }))
+  $('export').addEventListener('click', () => {
+    if (!data) return
+    const rows = [['nombre', 'correo', 'telefono', 'fecha']].concat(data.recentLeads.map((l) => [l.name, l.email, l.phone, dateTime(l.created_at)]))
+    const csv = rows.map((r) => r.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(',')).join('\r\n')
+    const url = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv;charset=utf-8' }))
+    const a = Object.assign(document.createElement('a'), { href: url, download: 'registros-apartatuespacio.csv' })
+    a.click()
+    URL.revokeObjectURL(url)
+  })
+
+  // ---------- Render ----------
+  function render(d) {
+    const t = d.totals
+    $('updated').textContent = `Actualizado ${dateTime(d.generatedAt)} · últimos ${d.days} días`
+    $('tracking-note').textContent = d.trackingSince
+      ? `Las visitas se miden desde el ${dateTime(d.trackingSince)} · los registros anteriores a esa fecha no tienen visita asociada.`
+      : 'Todavía no hay visitas medidas. Aparecerán cuando alguien abra la landing publicada.'
+
+    const conv = pct(t.leads, t.visitors)
+    $('kpis').innerHTML = [
+      kpi('Visitantes únicos', nf.format(t.visitors), `${nf.format(t.sessions)} sesiones`),
+      kpi('Páginas vistas', nf.format(t.pageviews), t.visitors ? `${(t.pageviews / t.visitors).toFixed(1)} por visitante` : '—'),
+      kpi('Registros', nf.format(t.leads), `${nf.format(t.leadsAllTime)} en total`),
+      kpi('Conversión', t.visitors ? `${conv}%` : '—', 'registros ÷ visitantes'),
+      kpi('Tiempo en la página', t.visitors ? duration(t.avgSeconds) : '—', 'promedio por sesión'),
+    ].join('')
+
+    const byDay = { x: (r) => shortDay(r.day), tip: (r) => longDay(r.day) }
+    barChart($('chart-visitors'), d.daily, 'visitors', (v) => `${nf.format(v)} visitante${v === 1 ? '' : 's'}`, byDay)
+    barChart($('chart-leads'), d.daily, 'leads', (v) => `${nf.format(v)} registro${v === 1 ? '' : 's'}`, byDay)
+    $('daily-table').innerHTML = table(
+      ['Día', 'Visitantes', 'Páginas vistas', 'Registros'],
+      d.daily.slice().reverse().map((r) => [longDay(r.day), nf.format(r.visitors), nf.format(r.pageviews), nf.format(r.leads)]),
+      [false, true, true, true],
+    )
+
+    const base = t.visitors
+    $('funnel').innerHTML = base
+      ? [
+          ['Visitaron la landing', t.visitors],
+          ['Llegaron al formulario', t.form_viewers],
+          ['Hicieron clic en un botón', t.cta_clickers],
+          ['Se registraron', t.leads],
+        ].map(([n, v]) => row(n, v, base, `${pct(v, base)}%`)).join('')
+      : empty('Sin visitas en este periodo.')
+
+    $('sources').innerHTML = rows(d.sources.map((s) => [s.source, s.visitors]), base, 'Sin visitas en este periodo.')
+    const deviceNames = { mobile: 'Celular', tablet: 'Tablet', desktop: 'Computador', desconocido: 'Desconocido' }
+    $('devices').innerHTML = rows(d.devices.map((x) => [deviceNames[x.device] || x.device, x.visitors]), base, 'Sin visitas en este periodo.')
+    const maxClicks = Math.max(0, ...d.ctas.map((c) => c.clicks))
+    $('ctas').innerHTML = d.ctas.length
+      ? d.ctas.map((c) => row(c.label, c.clicks, maxClicks, '', false)).join('')
+      : empty('Nadie ha hecho clic en los botones en este periodo.')
+
+    $('leads').innerHTML = d.recentLeads.length
+      ? table(['Nombre', 'Correo', 'Teléfono', 'Fecha'], d.recentLeads.map((l) => [esc(l.name), esc(l.email), esc(l.phone), dateTime(l.created_at)]))
+      : empty('Todavía no hay registros.')
+  }
+
+  // ---------- En vivo ----------
+  const deviceName = (d) => ({ mobile: 'Celular', tablet: 'Tablet', desktop: 'Computador' }[d] || 'Desconocido')
+  const eventName = {
+    pageview: 'Abrió la landing',
+    form_view: 'Llegó al formulario',
+    cta_click: 'Clic en botón',
+    lead: 'Se registró',
+  }
+
+  function ago(iso, now) {
+    const s = Math.max(0, Math.round((now - new Date(iso)) / 1000))
+    if (s < 60) return `hace ${s} s`
+    if (s < 3600) return `hace ${Math.floor(s / 60)} min`
+    if (s < 86400) return `hace ${Math.floor(s / 3600)} h`
+    return dateTime(iso)
+  }
+
+  function duration(seconds) {
+    const s = Math.max(0, Math.round(seconds))
+    if (s < 60) return `${s} s`
+    const m = Math.floor(s / 60)
+    return m < 60 ? `${m} min ${s % 60 ? `${s % 60} s` : ''}`.trim() : `${Math.floor(m / 60)} h ${m % 60} min`
+  }
+
+  function renderLive(live) {
+    const now = new Date(live.generatedAt)
+    $('live-updated').textContent = `Última lectura ${now.toLocaleTimeString('es-CO', { timeZone: 'America/Bogota' })}`
+    $('active-now').textContent = nf.format(live.activeNow)
+    const t = live.today
+    $('today').innerHTML = [
+      ['Visitantes hoy', t.visitors], ['Páginas vistas hoy', t.pageviews],
+      ['Registros hoy', t.leads],
+    ].map(([label, v]) => `<div>${label}<strong class="num">${nf.format(v)}</strong></div>`).join('')
+
+    barChart($('chart-minutes'), live.perMinute, 'visitors',
+      (v) => `${nf.format(v)} persona${v === 1 ? '' : 's'}`, { x: (r) => r.minute, tip: (r) => r.minute, height: 130 })
+
+    $('active-list').innerHTML = live.active.length
+      ? table(['Dispositivo', 'Llegó desde', 'En la página'],
+          live.active.map((a) => [deviceName(a.device), esc(a.source || 'Directo'), duration((now - new Date(a.started_at)) / 1000)]),
+          [false, false, true])
+      : empty('Nadie está en la landing en este momento.')
+
+    const fresh = new Set()
+    $('feed').innerHTML = live.feed.length
+      ? live.feed.map((f) => {
+          const id = `${f.created_at}|${f.type}|${f.label}`
+          fresh.add(id)
+          const detail = [f.type === 'cta_click' ? esc(f.label) : null, deviceName(f.device), f.type === 'pageview' ? esc(f.source) : null]
+            .filter(Boolean).join(' · ')
+          const isNew = seenFeed.size && !seenFeed.has(id)
+          return `<li class="${isNew ? 'new' : ''}"><span class="what"><strong>${eventName[f.type] || f.type}</strong> · ${detail}</span><span class="when">${ago(f.created_at, now)}</span></li>`
+        }).join('')
+      : `<li class="empty">Todavía no hay actividad.</li>`
+    seenFeed = fresh
+  }
+
+  const kpi = (label, value, hint) =>
+    `<div class="card kpi"><div class="label">${label}</div><div class="value num">${value}</div><div class="hint">${hint}</div></div>`
+  const empty = (text) => `<p class="empty">${text}</p>`
+
+  function row(name, value, max, extra = '', showPct = true) {
+    const w = max ? Math.max(0, Math.min(100, (value / max) * 100)) : 0
+    return `<div class="row"><span class="name" title="${esc(name)}">${esc(name)}</span>
+      <span class="val num">${nf.format(value)}${showPct && extra ? `<small>${extra}</small>` : ''}</span>
+      <div class="track" aria-hidden="true"><div class="fill" style="width:${w}%"></div></div></div>`
+  }
+
+  function rows(list, total, emptyText) {
+    if (!list.length) return empty(emptyText)
+    return list.map(([name, v]) => row(name, v, total, `${pct(v, total)}%`)).join('')
+  }
+
+  function table(head, body, numeric = []) {
+    return `<table><thead><tr>${head.map((h, i) => `<th class="${numeric[i] ? 'num' : ''}">${h}</th>`).join('')}</tr></thead>
+      <tbody>${body.map((r) => `<tr>${r.map((c, i) => `<td class="${numeric[i] ? 'num' : ''}">${c}</td>`).join('')}</tr>`).join('')}</tbody></table>`
+  }
+
+  // Barras verticales de una sola serie: eje Y con 3 líneas guía, etiquetas X espaciadas y tooltip por día.
+  // Se dibuja al ancho real del contenedor para que el texto de los ejes no se encoja en celular.
+  const charts = []
+  let resizeTimer
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer)
+    resizeTimer = setTimeout(() => charts.forEach((args) => drawBars(...args)), 150)
+  })
+
+  function barChart(el, series, key, fmt, opts) {
+    const i = charts.findIndex(([e]) => e === el)
+    if (i >= 0) charts.splice(i, 1)
+    charts.push([el, series, key, fmt, opts])
+    drawBars(el, series, key, fmt, opts)
+  }
+
+  function drawBars(el, series, key, fmt, opts) {
+    const W = Math.max(280, Math.round(el.clientWidth || 720))
+    const H = opts.height || (W < 500 ? 170 : 200), padL = 32, padB = 22, padT = 8
+    const max = Math.max(1, ...series.map((r) => r[key]))
+    const step = niceStep(max)
+    const top = Math.ceil(max / step) * step
+    const plotW = W - padL, plotH = H - padB - padT
+    const slot = plotW / series.length
+    const gap = Math.min(4, slot * 0.25)
+    const barW = Math.max(1, slot - gap)
+    const y = (v) => padT + plotH - (v / top) * plotH
+    const labelEvery = Math.ceil(series.length / Math.max(3, Math.floor(plotW / 56)))
+
+    let svg = `<svg viewBox="0 0 ${W} ${H}" width="${W}" height="${H}" role="img" aria-label="${esc(el.previousElementSibling?.querySelector('h2')?.textContent || '')}">`
+    for (let v = 0; v <= top; v += step) {
+      svg += `<line class="gridline" x1="${padL}" x2="${W}" y1="${y(v)}" y2="${y(v)}"/>`
+      svg += `<text class="axis-label num" x="${padL - 6}" y="${y(v) + 4}" text-anchor="end">${nf.format(v)}</text>`
+    }
+    series.forEach((r, i) => {
+      const x = padL + i * slot + gap / 2
+      const v = r[key]
+      const h = Math.max(0, y(0) - y(v))
+      const r4 = Math.min(4, barW / 2, h)
+      // Barra con extremos superiores redondeados, anclada a la línea base
+      const path = h > 0
+        ? `M${x},${y(0)} V${y(v) + r4} Q${x},${y(v)} ${x + r4},${y(v)} H${x + barW - r4} Q${x + barW},${y(v)} ${x + barW},${y(v) + r4} V${y(0)} Z`
+        : ''
+      svg += `<rect class="hit" x="${padL + i * slot}" y="${padT}" width="${slot}" height="${plotH}" data-i="${i}"/>`
+      if (path) svg += `<path class="bar" d="${path}"/>`
+      // Etiquetas espaciadas; la última siempre, sin chocar con la anterior
+      const last = series.length - 1
+      if (i === last || (i % labelEvery === 0 && last - i >= labelEvery * 0.75)) {
+        svg += `<text class="axis-label" x="${x + barW / 2}" y="${H - 6}" text-anchor="middle">${esc(opts.x(r))}</text>`
+      }
+    })
+    svg += `</svg><div class="tooltip" role="status"></div>`
+    el.innerHTML = svg
+
+    const tip = el.querySelector('.tooltip')
+    const svgEl = el.querySelector('svg')
+    el.querySelectorAll('.hit').forEach((hit) => {
+      const show = () => {
+        const i = Number(hit.dataset.i)
+        const r = series[i]
+        const scale = svgEl.getBoundingClientRect().width / W
+        tip.textContent = `${opts.tip(r)} · ${fmt(r[key])}`
+        tip.style.left = `${(padL + i * slot + slot / 2) * scale}px`
+        tip.style.top = `${y(r[key]) * scale}px`
+        tip.classList.add('show')
+      }
+      hit.addEventListener('mouseenter', show)
+      hit.addEventListener('click', show)
+      hit.addEventListener('mouseleave', () => tip.classList.remove('show'))
+    })
+  }
+
+  function niceStep(max) {
+    const raw = max / 3
+    const pow = Math.pow(10, Math.floor(Math.log10(raw)))
+    const n = raw / pow
+    return Math.max(1, (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * pow)
+  }
+
+  if (token) refresh()
+  else showLogin()
+})()
+</script>
+</body>
+</html>

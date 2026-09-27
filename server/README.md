@@ -15,9 +15,11 @@ La landing nunca se conecta directo a la base de datos: las credenciales solo vi
 |--------|--------------|---------------------------------------------------------|
 | POST   | `/api/leads` | Guarda un registro `{ name, phone, email, consent }`    |
 | POST   | `/api/nps`   | Guarda una respuesta NPS `{ score (0-10), comment?, email? }` |
+| POST   | `/api/events` | Evento anónimo de la landing (visita, clic, pulso cada 30 s) |
+| GET    | `/admin`     | Panel privado de métricas (pide contraseña)             |
 | GET    | `/health`    | Verifica que la API y la base de datos respondan        |
 
-- Las tablas `leads` y `nps_responses` se crean solas al arrancar.
+- Las tablas `leads`, `nps_responses` y `events` se crean solas al arrancar.
 - Si un correo ya existe, se actualizan sus datos (no se duplica).
 - Máximo 10 registros por IP cada 15 minutos.
 
@@ -28,6 +30,7 @@ La landing nunca se conecta directo a la base de datos: las credenciales solo vi
 | `DATABASE_URL`    | `${{Postgres.DATABASE_URL}}` (referencia al servicio Postgres del proyecto)   |
 | `ALLOWED_ORIGINS` | `https://santiagoangel04.github.io` (opcional; ese es el valor por defecto)  |
 | `PGSSL`           | Solo `true` si usas la URL pública de Postgres en vez de la interna          |
+| `ADMIN_PASSWORD_HASH` | Hash scrypt de la contraseña del panel `/admin` (ver abajo). Sin ella, el panel queda deshabilitado |
 
 `PORT` lo asigna Railway automáticamente.
 
@@ -38,6 +41,31 @@ La landing nunca se conecta directo a la base de datos: las credenciales solo vi
 3. **Variables** → agrega `DATABASE_URL` = `${{Postgres.DATABASE_URL}}`.
 4. **Settings → Networking → Generate Domain**.
 5. Abre `https://<tu-dominio>.up.railway.app/health`: debe responder `{"ok":true,"db":"up"}`.
+
+## Panel privado de métricas
+
+`https://<tu-dominio>.up.railway.app/admin` · no está enlazado en ningún lado y no se indexa en buscadores.
+
+- **En vivo** (se actualiza cada 10 s): personas en la landing ahora, visitantes/registros de hoy,
+  actividad por minuto, quiénes están (dispositivo, origen, tiempo) y últimas acciones.
+- **Resumen del periodo** (7, 30 o 90 días): visitantes únicos, páginas vistas, registros, conversión,
+  tiempo promedio, visitas y registros por día, embudo, fuentes, dispositivos, clics por sección
+  y últimos registros (descargables en CSV).
+
+**Contraseña:** el repositorio no la contiene. Railway guarda solo su hash scrypt en `ADMIN_PASSWORD_HASH`.
+Para crear o cambiar la contraseña:
+
+```bash
+node scripts/new-admin-password.mjs
+```
+
+Guarda la contraseña que imprime y pega el hash en la variable de Railway. Al entrar, la contraseña se
+cambia por una sesión firmada que dura 12 horas; el navegador nunca la guarda.
+
+**Medición en la landing:** es anónima (sin cookies, sin IP ni datos personales). Para que las visitas
+del equipo no cuenten, abre una vez la landing con `?notrack=1` en cada navegador (`?notrack=0` lo revierte).
+Para saber de dónde llega la gente, comparte enlaces con `utm_source`, por ejemplo
+`…/ApartaTuEspacio/?utm_source=instagram`.
 
 ## Ver los registros
 

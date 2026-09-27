@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { User, Phone, Mail, Check, Loader2, AlertCircle, PartyPopper, Lock } from 'lucide-react'
 import { submitLead } from '../services/leadService.js'
+import { track } from '../services/analytics.js'
 import { validators, validateAll, formatPhone, normalizePhone } from '../utils/validation.js'
 import './LeadForm.css'
 
@@ -70,6 +71,7 @@ export default function LeadForm() {
     setSubmitError('')
     try {
       await submitLead({ ...values, phone: normalizePhone(values.phone) })
+      track('lead')
       setStatus('success')
     } catch (err) {
       console.error(err)
