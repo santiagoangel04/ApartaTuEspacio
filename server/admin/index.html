@@ -101,6 +101,11 @@
   .kpi .label { font-size: 0.8rem; color: var(--muted); font-weight: 600; }
   .kpi .value { font-size: 1.9rem; font-weight: 700; letter-spacing: -0.02em; margin-top: 2px; }
   .kpi .hint { font-size: 0.78rem; color: var(--muted); }
+  .estimate {
+    display: inline-block; margin-top: 8px; font-size: 0.76rem; font-weight: 600; color: var(--text-2);
+    background: var(--surface-2); border: 1px dashed var(--border); border-radius: 6px; padding: 2px 7px;
+  }
+  .today .estimate { margin-top: 2px; font-size: 0.7rem; }
   .stack > .card + .card { margin-top: 16px; }
 
   /* Gráfica de barras (SVG) */
@@ -446,8 +451,8 @@
 
     const conv = pct(t.leads, t.visitors)
     $('kpis').innerHTML = [
-      kpi('Visitantes únicos', nf.format(t.visitors), `${nf.format(t.sessions)} sesiones`),
-      kpi('Páginas vistas', nf.format(t.pageviews), t.visitors ? `${(t.pageviews / t.visitors).toFixed(1)} por visitante` : '—'),
+      kpi('Visitantes únicos', nf.format(t.visitors), `${nf.format(t.sessions)} sesiones`, estimate(t.visitors)),
+      kpi('Páginas vistas', nf.format(t.pageviews), t.visitors ? `${(t.pageviews / t.visitors).toFixed(1)} por visitante` : '—', estimate(t.pageviews)),
       kpi('Registros', nf.format(t.leads), `${nf.format(t.leadsAllTime)} en total`),
       kpi('Conversión', t.visitors ? `${conv}%` : '—', 'registros ÷ visitantes'),
       kpi('Tiempo en la página', t.visitors ? duration(t.avgSeconds) : '—', 'promedio por sesión'),
@@ -515,9 +520,9 @@
     $('active-now').textContent = nf.format(live.activeNow)
     const t = live.today
     $('today').innerHTML = [
-      ['Visitantes hoy', t.visitors], ['Páginas vistas hoy', t.pageviews],
-      ['Registros hoy', t.leads],
-    ].map(([label, v]) => `<div>${label}<strong class="num">${nf.format(v)}</strong></div>`).join('')
+      ['Visitantes hoy', t.visitors, true], ['Páginas vistas hoy', t.pageviews, true],
+      ['Registros hoy', t.leads, false],
+    ].map(([label, v, withEstimate]) => `<div>${label}<strong class="num">${nf.format(v)}</strong>${withEstimate ? estimate(v) : ''}</div>`).join('')
 
     barChart($('chart-minutes'), live.perMinute, 'visitors',
       (v) => `${nf.format(v)} persona${v === 1 ? '' : 's'}`, { x: (r) => r.minute, tip: (r) => r.minute, height: 130 })
@@ -542,8 +547,14 @@
     seenFeed = fresh
   }
 
-  const kpi = (label, value, hint) =>
-    `<div class="card kpi"><div class="label">${label}</div><div class="value num">${value}</div><div class="hint">${hint}</div></div>`
+  // Cifra estimada de visitas: real + 20 %, siempre marcada como estimación y al lado de la cifra real.
+  // Solo se aplica a visitas y páginas vistas; registros, conversión y gráficas usan datos reales.
+  const ESTIMATE_FACTOR = 1.2
+  const estimate = (real) =>
+    `<span class="estimate num" title="Estimación: cifra real + 20 %. No es un dato medido.">Estimado +20 %: ${nf.format(Math.round(real * ESTIMATE_FACTOR))}</span>`
+
+  const kpi = (label, value, hint, extra = '') =>
+    `<div class="card kpi"><div class="label">${label}</div><div class="value num">${value}</div><div class="hint">${hint}</div>${extra}</div>`
   const empty = (text) => `<p class="empty">${text}</p>`
 
   function row(name, value, max, extra = '', showPct = true) {
